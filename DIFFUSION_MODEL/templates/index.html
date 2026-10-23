@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diffusion Model for Image Denoising | B.Tech AI & ML Project</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top py-2">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <div class="brand-icon">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <span class="fw-bold tracking-tight">Diffusion<span class="text-info">Denoise</span></span>
+          <span class="badge bg-secondary ms-1 fs-xs">B.Tech AI&ML</span>
+        </div>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-center gap-1">
+          <li class="nav-item">
+            <a class="nav-link active" href="/"><i class="fa-solid fa-sliders me-1"></i> Denoising Studio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/learn"><i class="fa-solid fa-graduation-cap me-1"></i> Learn Diffusion</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/results"><i class="fa-solid fa-chart-line me-1"></i> Results & Loss</a>
+          </li>
+          <li class="nav-item ms-lg-2">
+            {% if metadata.loaded %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3 rounded-pill d-flex align-items-center gap-2">
+                <span class="spinner-grow spinner-grow-sm text-success" style="width: 8px; height: 8px;" role="status"></span>
+                <span>PyTorch UNet Ready ({{ metadata.timesteps }} steps)</span>
+              </span>
+            {% else %}
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle py-2 px-3 rounded-pill d-flex align-items-center gap-2" title="{{ metadata.error }}">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Model Checkpoint Pending</span>
+              </span>
+            {% endif %}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section text-center">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-9">
+          <span class="badge-ai text-uppercase mb-3 d-inline-block">
+            <i class="fa-solid fa-brain me-1"></i> Deep Generative Machine Learning
+          </span>
+          <h1 class="hero-title mb-3">Diffusion Model for Image Denoising</h1>
+          <p class="lead text-muted mb-4">
+            A complete deep learning web application demonstrating forward Markov diffusion (Gaussian noise injection) 
+            and reverse generative diffusion (iterative noise prediction) using a trained PyTorch U-Net on 28×28 images.
+          </p>
+          <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="#studio" class="btn btn-primary-gradient px-4 py-2">
+              <i class="fa-solid fa-play me-2"></i>Start Denoising
+            </a>
+            <a href="/learn" class="btn btn-outline-dark px-4 py-2">
+              <i class="fa-solid fa-book-open me-2"></i>Learn Diffusion
+            </a>
+            <a href="/results" class="btn btn-outline-primary px-4 py-2">
+              <i class="fa-solid fa-square-poll-vertical me-2"></i>View Results
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Studio Main Content -->
+  <main class="container my-5" id="studio">
+
+    <!-- Model Status Warning Banner if not loaded -->
+    <div id="modelStatusAlert" class="alert alert-warning alert-dismissible fade show d-none" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="fa-solid fa-triangle-exclamation fa-2x me-3 text-warning"></i>
+        <div>
+          <h6 class="alert-heading fw-bold mb-1">Model Checkpoint Notice</h6>
+          <p class="mb-0 small" id="modelAlertText">
+            The trained model checkpoint was not found. Please train the model by running <code>python train.py</code> in the terminal.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      
+      <!-- Left Column: Controls & Pipeline Stepper -->
+      <div class="col-lg-5">
+        
+        <!-- Step 1: Input Image Card -->
+        <div class="custom-card mb-4">
+          <div class="card-header-styled d-flex align-items-center justify-content-between">
+            <span class="fw-bold text-dark"><i class="fa-solid fa-1 text-primary me-2"></i> Select or Upload Digit</span>
+            <span class="badge bg-light text-muted border">28×28 Grayscale</span>
+          </div>
+          <div class="card-body p-4">
+            
+            <!-- Quick Pre-loaded Samples -->
+            <label class="form-label small fw-bold text-muted text-uppercase mb-2">Instant Test: Pick a Pre-loaded Digit (0–9)</label>
+            <div class="sample-grid mb-3" id="sampleDigitsContainer">
+              <!-- Dynamically populated or fallback -->
+              <div class="text-muted small">Loading digit tiles...</div>
+            </div>
+
+            <div class="position-relative text-center my-3">
+              <hr class="text-muted opacity-25">
+              <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 small text-muted">OR UPLOAD</span>
+            </div>
+
+            <!-- Drag and Drop Upload -->
+            <div class="upload-dropzone" id="dropzone">
+              <i class="fa-solid fa-cloud-arrow-up fa-2x text-primary mb-2"></i>
+              <div class="small fw-semibold text-dark">Click or Drag & Drop image here</div>
+              <div class="text-muted fs-xs mt-1">Accepts PNG, JPG, JPEG (Max 5MB)</div>
+              <input type="file" id="fileInput" class="d-none" accept=".png,.jpg,.jpeg">
+            </div>
+
+            <div id="uploadFeedback" class="small text-muted mt-2 d-flex align-items-center justify-content-between">
+              <span id="uploadStatusText">Ready for input.</span>
+              <span id="currentFilenameBadge" class="badge bg-light text-dark border d-none"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Forward Diffusion Controls -->
+        <div class="custom-card mb-4">
+          <div class="card-header-styled d-flex align-items-center justify-content-between">
+            <span class="fw-bold text-dark"><i class="fa-solid fa-2 text-primary me-2"></i> Forward Diffusion (Add Noise)</span>
+            <span class="badge bg-info text-white">t ∈ [1, {{ metadata.timesteps }}]</span>
+          </div>
+          <div class="card-body p-4">
+            
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="timestepSlider" class="form-label small fw-bold text-muted mb-0">Diffusion Timestep (t):</label>
+              <span class="badge bg-primary px-3 py-1 fs-6" id="timestepDisplay">t = 150</span>
+            </div>
+
+            <input type="range" class="form-range my-3" min="1" max="{{ metadata.timesteps }}" value="150" id="timestepSlider">
+
+            <!-- Presets -->
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button class="btn btn-sm btn-outline-secondary btn-preset" onclick="setTimestep(50)">Light (t=50)</button>
+              <button class="btn btn-sm btn-outline-secondary btn-preset" onclick="setTimestep(120)">Moderate (t=120)</button>
+              <button class="btn btn-sm btn-outline-secondary btn-preset" onclick="setTimestep(200)">Heavy (t=200)</button>
+              <button class="btn btn-sm btn-outline-secondary btn-preset" onclick="setTimestep(290)">Extreme (t=290)</button>
+            </div>
+
+            <!-- Mathematical Parameters Box -->
+            <div class="math-card mb-3">
+              <div class="d-flex justify-content-between mb-1">
+                <span>Signal Factor <span class="math-var">√(ᾱ_t)</span>:</span>
+                <span id="signalWeightVal" class="text-info">--</span>
+              </div>
+              <div class="d-flex justify-content-between mb-1">
+                <span>Noise Factor <span class="math-var">√(1 - ᾱ_t)</span>:</span>
+                <span id="noiseWeightVal" class="text-warning">--</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Cumulative Alpha <span class="math-var">ᾱ_t</span>:</span>
+                <span id="alphaBarVal" class="text-success">--</span>
+              </div>
+            </div>
+
+            <button class="btn btn-outline-primary w-100 fw-semibold" id="btnForwardDiffuse" disabled>
+              <i class="fa-solid fa-plus-minus me-2"></i>Inject Gaussian Noise (x_t)
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Reverse Diffusion Action Card -->
+        <div class="custom-card mb-4">
+          <div class="card-header-styled d-flex align-items-center justify-content-between">
+            <span class="fw-bold text-dark"><i class="fa-solid fa-3 text-primary me-2"></i> Reverse Diffusion (AI Denoise)</span>
+            <span class="badge bg-purple text-white" style="background:#7c3aed;">Iterative DDPM</span>
+          </div>
+          <div class="card-body p-4 text-center">
+            <p class="small text-muted mb-3">
+              The trained PyTorch U-Net predicts Gaussian noise &epsilon;<sub>&theta;</sub>(x<sub>t</sub>, t) at each step, 
+              iteratively recovering the clean original digit down to t = 0.
+            </p>
+            
+            <button class="btn btn-primary-gradient w-100 py-3 fs-5 shadow-sm" id="btnReverseDiffuse" disabled>
+              <i class="fa-solid fa-wand-sparkles me-2"></i>Run Reverse Diffusion
+            </button>
+
+            <!-- Loading Spinner & Live Step Message -->
+            <div id="reverseProgressContainer" class="mt-3 d-none">
+              <div class="d-flex align-items-center justify-content-center gap-3">
+                <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
+                <div class="text-start">
+                  <div class="fw-semibold text-dark small" id="reverseProgressStatus">Denoising in progress...</div>
+                  <div class="text-muted fs-xs" id="reverseProgressSub">Sampling reverse Markov transitions</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Visual Comparison & Results -->
+      <div class="col-lg-7">
+        
+        <!-- Live Triplet Comparison Canvas Card -->
+        <div class="custom-card mb-4">
+          <div class="card-header-styled d-flex align-items-center justify-content-between">
+            <span class="fw-bold text-dark"><i class="fa-solid fa-eye text-primary me-2"></i> Diffusion Comparison Studio</span>
+            <span class="badge bg-light text-muted border">Real-Time Canvas</span>
+          </div>
+          <div class="card-body p-4">
+            
+            <div class="row g-3 text-center">
+              
+              <!-- Clean Image x0 -->
+              <div class="col-md-4">
+                <label class="small fw-bold text-muted mb-2 d-block">Original Image (x<sub>0</sub>)</label>
+                <div class="img-display-box" id="cleanBox">
+                  <span class="img-stage-badge">Clean x<sub>0</sub></span>
+                  <div class="placeholder-text" id="cleanPlaceholder">
+                    <i class="fa-regular fa-image fa-2x mb-2 d-block opacity-50"></i>
+                    Upload or select digit
+                  </div>
+                  <img id="cleanImg" class="d-none" alt="Clean Digit">
+                </div>
+                <div class="mt-2 text-muted fs-xs">Ground Truth</div>
+              </div>
+
+              <!-- Noisy Image xt -->
+              <div class="col-md-4">
+                <label class="small fw-bold text-muted mb-2 d-block">Noisy Image (x<sub>t</sub>)</label>
+                <div class="img-display-box" id="noisyBox">
+                  <span class="img-stage-badge">Noisy x<sub>t</sub></span>
+                  <div class="placeholder-text" id="noisyPlaceholder">
+                    <i class="fa-solid fa-braille fa-2x mb-2 d-block opacity-50"></i>
+                    Pending noise addition
+                  </div>
+                  <img id="noisyImg" class="d-none" alt="Noisy Image">
+                </div>
+                <div class="mt-2 text-muted fs-xs" id="noisyBadgeInfo">q(x<sub>t</sub> | x<sub>0</sub>)</div>
+              </div>
+
+              <!-- Denoised Image xhat0 -->
+              <div class="col-md-4">
+                <label class="small fw-bold text-muted mb-2 d-block">Denoised Result (x̂<sub>0</sub>)</label>
+                <div class="img-display-box" id="denoisedBox">
+                  <span class="img-stage-badge" style="background: rgba(16, 185, 129, 0.9);">Denoised x̂<sub>0</sub></span>
+                  <div class="placeholder-text" id="denoisedPlaceholder">
+                    <i class="fa-solid fa-wand-magic fa-2x mb-2 d-block opacity-50"></i>
+                    Awaiting reverse diffusion
+                  </div>
+                  <img id="denoisedImg" class="d-none" alt="Denoised Output">
+                </div>
+                <div class="mt-2">
+                  <a id="btnDownload" class="btn btn-sm btn-outline-success py-1 px-3 d-none" href="#" download="denoised_output.png">
+                    <i class="fa-solid fa-download me-1"></i>Download
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Mathematical Formula Banner -->
+            <div class="alert alert-light border mt-4 p-3 mb-0 small text-muted">
+              <div class="d-flex align-items-center mb-1">
+                <i class="fa-solid fa-circle-info text-primary me-2"></i>
+                <strong class="text-dark">Mathematical Formulation Applied:</strong>
+              </div>
+              <div class="font-monospace text-dark mt-1">
+                Forward: x<sub>t</sub> = √(ᾱ<sub>t</sub>) x<sub>0</sub> + √(1 - ᾱ<sub>t</sub>) &epsilon;, &nbsp;&epsilon; ~ N(0, I)<br>
+                Reverse: x<sub>t-1</sub> = (1/√&alpha;<sub>t</sub>) [x<sub>t</sub> - (&beta;<sub>t</sub>/√(1 - ᾱ<sub>t</sub>)) &epsilon;<sub>&theta;</sub>(x<sub>t</sub>, t)] + &sigma;<sub>t</sub> z
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Reverse Diffusion Trajectory Filmstrip -->
+        <div class="custom-card mb-4" id="trajectoryCard">
+          <div class="card-header-styled d-flex align-items-center justify-content-between">
+            <span class="fw-bold text-dark"><i class="fa-solid fa-film text-primary me-2"></i> Reverse Diffusion Step-by-Step Trajectory</span>
+            <span class="badge bg-secondary">Progressive Markov Steps</span>
+          </div>
+          <div class="card-body p-4">
+            <div class="text-muted small mb-2">Intermediate reconstructed states during iterative reverse sampling:</div>
+            <div class="filmstrip-container" id="filmstripContainer">
+              <div class="text-muted small py-3 px-2">Run reverse diffusion to view intermediate trajectory frames.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantitative Evaluation Metrics -->
+        <div class="custom-card">
+          <div class="card-header-styled d-flex align-items-center justify-content-between">
+            <span class="fw-bold text-dark"><i class="fa-solid fa-gauge-high text-primary me-2"></i> Reconstruction Quality Metrics</span>
+            <span class="badge bg-primary">Quantitative Evaluation</span>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3 text-center">
+              
+              <div class="col-6 col-md-3">
+                <div class="p-3 bg-light rounded-3 border">
+                  <div class="text-muted fs-xs text-uppercase fw-semibold mb-1">Inference Time</div>
+                  <div class="h4 fw-bold text-dark mb-0" id="metricTime">--</div>
+                  <div class="text-muted fs-xs mt-1">PyTorch execution</div>
+                </div>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <div class="p-3 bg-light rounded-3 border">
+                  <div class="text-muted fs-xs text-uppercase fw-semibold mb-1">MSE Loss</div>
+                  <div class="h4 fw-bold text-dark mb-0" id="metricMSE">--</div>
+                  <div class="text-muted fs-xs mt-1">Between x<sub>0</sub> &amp; x̂<sub>0</sub></div>
+                </div>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <div class="p-3 bg-light rounded-3 border">
+                  <div class="text-muted fs-xs text-uppercase fw-semibold mb-1">PSNR (dB)</div>
+                  <div class="h4 fw-bold text-success mb-0" id="metricPSNR">--</div>
+                  <div class="text-muted fs-xs mt-1">Signal fidelity</div>
+                </div>
+              </div>
+
+              <div class="col-6 col-md-3">
+                <div class="p-3 bg-light rounded-3 border">
+                  <div class="text-muted fs-xs text-uppercase fw-semibold mb-1">Correlation</div>
+                  <div class="h4 fw-bold text-primary mb-0" id="metricCorr">--</div>
+                  <div class="text-muted fs-xs mt-1">Structural similarity</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center">
+      <div class="row align-items-center">
+        <div class="col-md-6 text-md-start mb-2 mb-md-0">
+          <span class="fw-bold text-white">Diffusion Model for Image Denoising</span>
+          <div class="small text-muted">B.Tech Artificial Intelligence &amp; Machine Learning Mini Project</div>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <span class="badge bg-dark border border-secondary text-light px-3 py-2">
+            Built with PyTorch &bull; Flask &bull; Bootstrap 5
+          </span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Frontend Controller Script -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

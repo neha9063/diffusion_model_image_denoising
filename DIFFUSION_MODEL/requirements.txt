@@ -1,0 +1,13 @@
+# Core Deep Learning
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Backend Web Framework
+Flask>=3.0.0
+
+# Image Processing & Numerics
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# Plotting & Visualization
+matplotlib>=3.7.0

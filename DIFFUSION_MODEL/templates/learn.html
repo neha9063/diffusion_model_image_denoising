@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn Diffusion Models | B.Tech AI & ML Project</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top py-2">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <div class="brand-icon">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <span class="fw-bold tracking-tight">Diffusion<span class="text-info">Denoise</span></span>
+          <span class="badge bg-secondary ms-1 fs-xs">B.Tech AI&ML</span>
+        </div>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-center gap-1">
+          <li class="nav-item">
+            <a class="nav-link" href="/"><i class="fa-solid fa-sliders me-1"></i> Denoising Studio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/learn"><i class="fa-solid fa-graduation-cap me-1"></i> Learn Diffusion</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/results"><i class="fa-solid fa-chart-line me-1"></i> Results & Loss</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Header -->
+  <header class="hero-section text-center py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <span class="badge-ai text-uppercase mb-2 d-inline-block">Theory &amp; Concepts</span>
+          <h1 class="hero-title mb-3">Understanding Diffusion Models</h1>
+          <p class="lead text-muted mb-0">
+            A beginner-friendly guide to how modern AI adds noise and learns to reverse it — 
+            from mathematical foundations to U-Net neural architectures.
+          </p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container my-5">
+    
+    <!-- 1. High-level intuition -->
+    <div class="custom-card mb-5">
+      <div class="card-header-styled">
+        <h4 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-lightbulb text-warning me-2"></i>1. What is a Diffusion Model?</h4>
+      </div>
+      <div class="card-body p-4">
+        <p class="lead text-dark">
+          Imagine dropping a single drop of blue ink into a glass of clear water. Over time, the ink particles diffuse until the water is completely cloudy and uniform. This is <strong>forward diffusion</strong>.
+        </p>
+        <p class="text-muted">
+          Now imagine playing that video in reverse: starting from cloudy water and watching every microscopic particle reassemble itself back into that pure, single drop of ink. 
+          That reverse video is exactly what a <strong>Denoising Diffusion Probabilistic Model (DDPM)</strong> learns to do using deep neural networks!
+        </p>
+        
+        <div class="row g-4 mt-2">
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 bg-light border h-100">
+              <h5 class="fw-bold text-primary"><i class="fa-solid fa-arrow-right me-2"></i>Forward Process (q)</h5>
+              <p class="small text-muted mb-0">
+                A fixed Markov chain that gradually destroys image structure by adding tiny amounts of standard Gaussian noise across <em>T</em> timesteps until the image becomes pure random noise.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded-3 bg-light border h-100">
+              <h5 class="fw-bold text-success"><i class="fa-solid fa-arrow-left me-2"></i>Reverse Process (p<sub>&theta;</sub>)</h5>
+              <p class="small text-muted mb-0">
+                A trained deep neural network (U-Net) that inspects a noisy image at step <em>t</em>, predicts what noise was added, and subtracts it step-by-step to recover the clean data.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Step-by-Step Architecture Pipeline Diagram -->
+    <div class="custom-card mb-5">
+      <div class="card-header-styled">
+        <h4 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-diagram-project text-primary me-2"></i>2. Step-by-Step Pipeline Architecture</h4>
+      </div>
+      <div class="card-body p-4">
+        
+        <!-- Interactive HTML/CSS Flowchart -->
+        <div class="row g-3 text-center align-items-center justify-content-center">
+          
+          <div class="col-md-2">
+            <div class="p-3 rounded-3 border bg-white shadow-sm">
+              <i class="fa-solid fa-image fa-2x text-primary mb-2"></i>
+              <div class="fw-bold small">Original x<sub>0</sub></div>
+              <div class="text-muted fs-xs">28×28 Clean Digit</div>
+            </div>
+          </div>
+
+          <div class="col-auto">
+            <i class="fa-solid fa-arrow-right-long text-muted fa-lg"></i>
+          </div>
+
+          <div class="col-md-3">
+            <div class="p-3 rounded-3 border bg-light shadow-sm">
+              <i class="fa-solid fa-shuffle fa-2x text-warning mb-2"></i>
+              <div class="fw-bold small">Forward Diffusion</div>
+              <div class="text-muted fs-xs">x<sub>t</sub> = √(ᾱ<sub>t</sub>)x<sub>0</sub> + √(1-ᾱ<sub>t</sub>)&epsilon;</div>
+            </div>
+          </div>
+
+          <div class="col-auto">
+            <i class="fa-solid fa-arrow-right-long text-muted fa-lg"></i>
+          </div>
+
+          <div class="col-md-3">
+            <div class="p-3 rounded-3 border bg-dark text-white shadow-sm">
+              <i class="fa-solid fa-network-wired fa-2x text-info mb-2"></i>
+              <div class="fw-bold small">PyTorch U-Net</div>
+              <div class="text-muted fs-xs">Conditioned on timestep <em>t</em></div>
+            </div>
+          </div>
+
+          <div class="col-auto">
+            <i class="fa-solid fa-arrow-right-long text-muted fa-lg"></i>
+          </div>
+
+          <div class="col-md-2">
+            <div class="p-3 rounded-3 border bg-success-subtle border-success shadow-sm">
+              <i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i>
+              <div class="fw-bold small text-success">Denoised x̂<sub>0</sub></div>
+              <div class="text-muted fs-xs">Iterative Reverse Loop</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3. Mathematical Foundations -->
+    <div class="custom-card mb-5">
+      <div class="card-header-styled">
+        <h4 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-square-root-variable text-info me-2"></i>3. Mathematical Equations Explained Simply</h4>
+      </div>
+      <div class="card-body p-4">
+        
+        <div class="row g-4">
+          
+          <div class="col-lg-6">
+            <div class="math-card h-100">
+              <h6 class="text-primary fw-bold text-uppercase mb-2">A. Forward Closed-Form Equation</h6>
+              <p class="small text-light">
+                Instead of adding noise step by step sequentially from 1 to <em>t</em>, we can jump directly to step <em>t</em> in a single calculation:
+              </p>
+              <div class="bg-black p-3 rounded mb-2 text-info">
+                x<sub>t</sub> = √(ᾱ<sub>t</sub>) &bull; x<sub>0</sub> + √(1 - ᾱ<sub>t</sub>) &bull; &epsilon;
+              </div>
+              <ul class="small text-muted ps-3 mb-0">
+                <li><strong class="text-white">x<sub>0</sub></strong>: The clean original image tensor in [-1, 1].</li>
+                <li><strong class="text-white">&epsilon;</strong>: Standard Gaussian noise drawn from N(0, I).</li>
+                <li><strong class="text-white">&beta;<sub>t</sub></strong>: Variance schedule (linear from 0.0001 to 0.02).</li>
+                <li><strong class="text-white">&alpha;<sub>t</sub></strong>: 1 - &beta;<sub>t</sub>.</li>
+                <li><strong class="text-white">ᾱ<sub>t</sub></strong>: Cumulative product &prod;<sub>s=1..t</sub> &alpha;<sub>s</sub>.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="math-card h-100">
+              <h6 class="text-success fw-bold text-uppercase mb-2">B. Reverse Denoising Transition</h6>
+              <p class="small text-light">
+                At inference time, the trained neural network predicts &epsilon;<sub>&theta;</sub>(x<sub>t</sub>, t) to take one step backwards from <em>t</em> to <em>t-1</em>:
+              </p>
+              <div class="bg-black p-3 rounded mb-2 text-warning">
+                x<sub>t-1</sub> = (1 / √&alpha;<sub>t</sub>) &bull; [ x<sub>t</sub> - (&beta;<sub>t</sub> / √(1 - ᾱ<sub>t</sub>)) &bull; &epsilon;<sub>&theta;</sub>(x<sub>t</sub>, t) ] + &sigma;<sub>t</sub> z
+              </div>
+              <ul class="small text-muted ps-3 mb-0">
+                <li><strong class="text-white">&epsilon;<sub>&theta;</sub>(x<sub>t</sub>, t)</strong>: Predicted noise from our trained U-Net.</li>
+                <li><strong class="text-white">&sigma;<sub>t</sub></strong>: Posterior standard deviation &radic;(&beta;̃<sub>t</sub>).</li>
+                <li><strong class="text-white">z</strong>: Random Gaussian vector (z = 0 when t = 0).</li>
+                <li><strong class="text-white">Objective Loss</strong>: L = E || &epsilon; - &epsilon;<sub>&theta;</sub>(x<sub>t</sub>, t) ||<sup>2</sup>.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 4. Traditional Filters vs. Diffusion Models -->
+    <div class="custom-card mb-5">
+      <div class="card-header-styled">
+        <h4 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-code-compare text-danger me-2"></i>4. Traditional Filters vs. Deep Diffusion Models</h4>
+      </div>
+      <div class="card-body p-4">
+        <p class="text-muted">
+          A common viva question is: <em>"Why not just use a Gaussian blur filter or bilateral filter to remove noise?"</em>
+          Here is a direct side-by-side comparison:
+        </p>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 20%;">Method</th>
+                <th style="width: 25%;">Mechanism</th>
+                <th style="width: 25%;">Strengths</th>
+                <th style="width: 30%;">Critical Limitation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fw-bold">Gaussian Blur Filter</td>
+                <td>Spatial convolution averaging neighboring pixels with a bell-curve kernel.</td>
+                <td>Instant computation, zero training required.</td>
+                <td><span class="text-danger">Destroys high-frequency details.</span> Causes severe blurring and cannot reconstruct lost digit strokes.</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">Median / Bilateral Filter</td>
+                <td>Non-linear ranking or edge-aware radiometric distance weighting.</td>
+                <td>Preserves sharp edges better than simple Gaussian blur.</td>
+                <td><span class="text-danger">Cannot hallucinate missing data.</span> Fails completely when noise level is moderate to high.</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">Wiener Filter</td>
+                <td>Statistical estimation minimizing mean square error in frequency domain.</td>
+                <td>Optimal linear estimator under stationary additive noise.</td>
+                <td><span class="text-danger">Assumes stationary linear noise</span> and struggles with complex multimodal image distributions.</td>
+              </tr>
+              <tr class="table-primary">
+                <td class="fw-bold"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i> Diffusion Model (DDPM)</td>
+                <td>Deep neural generative modeling learning the data score function &nabla; log p(x).</td>
+                <td><strong>Generative restoration:</strong> Reconstructs crisp, authentic digit strokes even from heavy noise (t &gt; 200).</td>
+                <td>Requires offline training and multi-step iterative sampling loop.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 5. Academic Scope & Limitations -->
+    <div class="custom-card">
+      <div class="card-header-styled">
+        <h4 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-shield-halved text-secondary me-2"></i>5. Academic Scope &amp; Real-World Limitations</h4>
+      </div>
+      <div class="card-body p-4">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">Why 28×28 Grayscale (MNIST)?</h6>
+            <p class="small text-muted">
+              MNIST represents a clean, low-dimensional manifold suitable for real-time CPU training and immediate interactive demonstration during college lab evaluations. 
+              A 1.1M parameter model executes iterative reverse diffusion in under 2 seconds on standard university laptops without requiring expensive GPU clusters.
+            </p>
+          </div>
+          <div class="col-md-6">
+            <h6 class="fw-bold text-dark">Limitations on Arbitrary Real-World Photos</h6>
+            <p class="small text-muted">
+              Models trained on MNIST learn the probability distribution of handwritten strokes. If a user uploads a high-resolution color photograph (e.g., a landscape or portrait), 
+              the model resizes and projects it onto the 28×28 grayscale manifold. Real-world photo denoising requires diffusion models trained on datasets like CelebA, ImageNet, or FFHQ.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center">
+      <div class="small text-muted">B.Tech Artificial Intelligence &amp; Machine Learning Mini Project &bull; PyTorch &bull; Flask</div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
